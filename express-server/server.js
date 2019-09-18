@@ -4,6 +4,25 @@ const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const redis = require("redis");
+const redisServer = process.env.REDIS_SERVER || 'localhost';
+const redisPort = process.env.REDIS_PORT || 6379;
+const redisURL = 'redis://'+redisServer+":"+redisPort;
+
+const redisClient = redis.createClient(redisURL);
+
+// if you'd like to select database 3, instead of 0 (default), call
+// client.select(3, function() { /* ... */ });
+redisClient.on("error", function (err) {
+    console.log("Error " + err);
+});
+redisClient.set("string key", "string val", redis.print);
+redisClient.get("string key", function(err, data){
+  if(err)
+    console.log("REDIS ERR: "+JSON.stringify(err));
+  else
+    console.log("REDIS VALUE:  "+data);
+})
 
 // MongoDB URL from the docker-compose file
 const mongoServer = process.env.MONGO_SERVER || 'localhost';

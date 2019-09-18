@@ -11,9 +11,12 @@ services:
     - "MONGO_SERVER=mongodb"
     - "MONGO_PORT=27017"
     - "MONGO_DBNAME=dockerAppDb"
+    - "REDIS_SERVER=redis"
+    - "REDIS_PORT=6379"
     - "WEB_PORT=8080"
     links:
       - mongodb
+      - redis
   
   mongodb:
     build: mongo-server
@@ -21,6 +24,14 @@ services:
     - "27018:27017"
     networks:
     - beingzero
+
+  redis:
+    #container_name: beingzero-redis
+    image: redis
+    volumes:
+    - ./redis-server/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - beingzero
 
 networks:
   beingzero:
