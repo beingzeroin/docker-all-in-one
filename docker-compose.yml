@@ -15,8 +15,8 @@ services:
     - "REDIS_PORT=6379"
     - "WEB_PORT=8080"
     links:
-      - mongodb
-      - redis
+    - mongodb
+    - redis
   
   mongodb:
     build: mongo-server
@@ -31,7 +31,36 @@ services:
     volumes:
     - ./redis-server/redis.conf:/usr/local/etc/redis/redis.conf
     networks:
-      - beingzero
+    - beingzero
 
+  zookeeper:
+    image: "bitnami/zookeeper:latest"
+    ports:
+    - "2181:2181"
+    environment:
+    - "ALLOW_ANONYMOUS_LOGIN=yes"
+    networks:
+      - beingzero
+    
+  kafka:
+    image: "bitnami/kafka:latest"
+    ports:
+    - "9092:9092"
+    networks:
+    - beingzero
+    volumes:
+    - ./kafka-server/data:/bitnami/kafka
+    environment:
+    - "ALLOW_PLAINTEXT_LISTENER=yes"
+    - "KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181"
+    links:
+    - zookeeper
+
+  rabbitmq:
+    image: 'bitnami/rabbitmq:latest'
+    networks:
+    - beingzero
+    ports:
+    - '15672:15672'
 networks:
   beingzero:

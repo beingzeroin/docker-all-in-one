@@ -1,0 +1,4 @@
+kafka-server/data/
+mongo-server/data/
+rabbitmq-server/data/
+redia-server/data/
