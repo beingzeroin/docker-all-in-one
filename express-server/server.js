@@ -4,18 +4,22 @@ const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const envConfig = require('./config/config');
 const redis = require("redis");
-const redisServer = process.env.REDIS_SERVER || 'localhost';
-const redisPort = process.env.REDIS_PORT || 6379;
-const redisURL = 'redis://'+redisServer+":"+redisPort;
 
-const redisClient = redis.createClient(redisURL);
+// Connect to mongodb
+mongoose.connect(envConfig.getMongoConnectionString(), { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Conect to Redis
+const redisClient = redis.createClient(envConfig.getRedisConnectionString());
 
 // if you'd like to select database 3, instead of 0 (default), call
 // client.select(3, function() { /* ... */ });
 redisClient.on("error", function (err) {
     console.log("Error " + err);
 });
+
+// Test Redis
 redisClient.set("string key", "string val", redis.print);
 redisClient.get("string key", function(err, data){
   if(err)
@@ -24,14 +28,6 @@ redisClient.get("string key", function(err, data){
     console.log("REDIS VALUE:  "+data);
 })
 
-// MongoDB URL from the docker-compose file
-const mongoServer = process.env.MONGO_SERVER || 'localhost';
-const mongoPort = process.env.MONGO_PORT || 27017;
-const mongoDBName = process.env.MONGO_DBNAME || 'docker-app-db';
-const dbHost = 'mongodb://'+mongoServer+':'+mongoPort +"/"+ mongoDBName;
-
-// Connect to mongodb
-mongoose.connect(dbHost, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Get our API routes
 const api = require('./routes/api');
@@ -56,8 +52,7 @@ app.use('/', api);
 /**
  * Get port from environment and store in Express.
  */
-const port = process.env.WEB_PORT || '3000';
-app.set('port', port);
+app.set('port', envConfig.getWebPort());
 
 /**
  * Create HTTP server.
@@ -67,4 +62,4 @@ const server = http.createServer(app);
 /**
  * Listen on provided port, on all network interfaces.
  */
-server.listen(port, () => console.log(`API running on localhost:${port}`));
+server.listen(app.get('port'), () => console.log(`API running on localhost:${app.get('port')}`));
